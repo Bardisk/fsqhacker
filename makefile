@@ -1,8 +1,9 @@
 APKLIST = $(foreach n,$(shell echo *.apk),$(basename $(n)))
 NEWAPKLIST = $(addprefix output/,$(shell echo *.apk))
+## change it to your own
 PYTHON = /c/Users/HP/AppData/Local/Programs/Python/Python39/python
 
-ALL: clean depackage modify package sign run
+ALL: depackage modify package sign run
 
 depackage:
 	@echo Detected `echo *.apk | wc -w` apk\(s\).
@@ -26,7 +27,7 @@ run:
 	@find . | grep result- | xargs $(PYTHON) csvmerger.py
 
 modify:
-	@for i in $(APKLIST);do find $$i/res/ | grep --regex ".*\(\.png\)\|\(\.xml\)" | xargs $(PYTHON) dissimulator.py;done
+	@for i in $(APKLIST);do find $$i/res/ | grep --regex ".*\.png" | xargs $(PYTHON) dissimulator.py;done
 
 clean:
 	-@for i in $(APKLIST);do rm -r $$i;done

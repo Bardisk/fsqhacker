@@ -6,23 +6,19 @@ import cv2
 
 from os import system
 
+print("processing " + str(len(argv) - 1) + " files")
+
 for name in argv[1:]:
+    
     if len(name.split('.')) < 2:
         print("error found with: " + name)
         continue
-    basename = name.split('.')[0]
-    suffix = name.split('.')[1]
-    if len(name.split('.')) > 2:
-        continue
-    if suffix == "xml":
-        xmlfile = open(name, "a")
-        xmlfile.write("<!-- hacking repackage detector -->")
-        continue
+    suffix = name.split('.')[-1]
     if suffix != "png":
         continue
     # do not change the picture color channels
     raw_pic = cv2.imread(name, -1)
-
+    # print("processing " + name)
     # modify the last pixel slightly
     # note that the picture can be grey scaled
     if len(raw_pic.shape) == 3:

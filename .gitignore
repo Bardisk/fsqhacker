@@ -1,0 +1,9 @@
+*.apk
+*.csv
+output
+result
+*
+!fsquadra
+!.gitignore
+!makefile
+!*.py
