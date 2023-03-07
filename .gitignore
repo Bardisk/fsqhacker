@@ -4,6 +4,8 @@ output
 result
 *
 !fsquadra
+!*.jar
 !.gitignore
 !makefile
 !*.py
+!apks

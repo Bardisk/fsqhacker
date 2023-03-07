@@ -1,37 +1,46 @@
 APKLIST = $(foreach n,$(shell echo *.apk),$(basename $(n)))
-NEWAPKLIST = $(addprefix output/,$(shell echo *.apk))
+# NEWAPKLIST = $(addprefix output/,$(shell echo *.apk))
+SIGNPWD = 123456
 ## change it to your own
-PYTHON = /c/Users/HP/AppData/Local/Programs/Python/Python39/python
+PYTHON = "/c/Program Files/Python310/python"
 
-ALL: depackage modify package sign run
+ALL: depackage package modify repackage sign run
+	@echo All things are done!
+
+$(shell mkdir -p output)
+$(shell mkdir -p result)
 
 depackage:
 	@echo Detected `echo *.apk | wc -w` apk\(s\).
 	@for i in `echo *.apk`; do echo depackaging $$i... && apktool d $$i;done
  
+modify:
+	@for i in $(APKLIST);do find $$i/res/ | grep --regex ".*\.png" | xargs $(PYTHON) dissimulator.py;done
+
+package:
+	@echo Leave apks in $(abspath output)
+	@for i in $(APKLIST);do echo packaging $$i.apk && apktool b $$i -o output/$$i.apk;done
+
 test:
 	@echo $(APKLIST)
 	@echo $(NEWAPKLIST)
 
-package:
-	@if ! [ -e output ]; then mkdir -p output; fi;
-	@echo Leave apks in $(abspath output)
-	@for i in $(APKLIST);do echo packaging $$i.apk && apktool b $$i -o output/$$i.apk;done
+repackage:
+	@echo Leave modified apks in $(abspath output)
+	@for i in $(APKLIST);do echo packaging $$i.apk && apktool b $$i -o output/$$i-modified.apk;done
 
 sign:
-	@for i in $(APKLIST);do echo 123456 | jarsigner -verbose -signedjar output/$$i.apk output/$$i.apk apks;done
+	@echo signing...
+	@for i in $(APKLIST);do echo $(SIGNPWD) | jarsigner -keystore apks -verbose -signedjar output/$$i.apk output/$$i.apk apks;done
+	@for i in $(APKLIST);do echo $(SIGNPWD) | jarsigner -keystore apks -verbose -signedjar output/$$i-modified.apk output/$$i-modified.apk apks;done
 
 run:
-	@if ! [ -e result ]; then mkdir -p result; fi;
-	@for i in $(APKLIST);do java -jar fsquadra/FSquaDRA-master.jar $$i.apk output/$$i.apk -o result/result-$$i.csv;done
+	@echo runing
+	@for i in $(APKLIST);do java -jar fsquadra/FSquaDRA.jar output/$$i.apk output/$$i-modified.apk -o result/result-$$i.csv;done
 	@find . | grep result- | xargs $(PYTHON) csvmerger.py
-
-modify:
-	@for i in $(APKLIST);do find $$i/res/ | grep --regex ".*\.png" | xargs $(PYTHON) dissimulator.py;done
 
 clean:
 	-@for i in $(APKLIST);do rm -r $$i;done
-#	@if [ -e output ]; then rm -r output; fi;
 
 clean-all: clean
 	-@if [ -e output ]; then rm -r output; fi;
